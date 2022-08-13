@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  database:
+    image: postgres
+    container_name: db_api_users
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=users
+      - POSTGRES_PASSWORD=users
+      - POSTGRES_DB=api_users
+    volumes:
+      - pgdata:/data/postgres
+  app:
+    build: .
+    container_name: api_users
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/usr/app
+    links:
+      - database
+    depends_on:
+      - database
+
+volumes:
+  pgdata:
+    driver: local
