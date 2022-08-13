@@ -1,4 +1,6 @@
+import { StatusCodes } from 'http-status-codes';
 import { db } from '../db';
+import { DatabaseError } from '../models/errors/database.error.model';
 import User from '../models/user.model';
 
 class UserRepository {
@@ -7,12 +9,17 @@ class UserRepository {
     const { rows } = await db.query<User[]>(query);
     return rows || [];
   }
+
   async findById(id: string): Promise<User[]> {
-    const query = `SELECT id, username FROM api_users WHERE id = $1`;
-    const value = [id];
-    const { rows } = await db.query<User[]>(query, value);
-    const [user] = rows;
-    return user;
+    try {
+      const query = `SELECT id, username FROM api_users WHERE id = $1`;
+      const value = [id];
+      const { rows } = await db.query<User[]>(query, value);
+      const [user] = rows;
+      return user;
+    } catch (error) {
+      throw new DatabaseError('Error query in database', error);
+    }
   }
 
   async create(user: User): Promise<string> {

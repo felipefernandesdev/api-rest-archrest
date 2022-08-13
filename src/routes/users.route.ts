@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { DatabaseError } from '../models/errors/database.error.model';
 import userRepository from '../repositories/user.repository';
 
 const userRoute = Router();
@@ -22,13 +23,17 @@ userRoute.get(
 userRoute.get(
   '/users/:id',
   async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
-    const { id } = req.params;
+    try {
+      const { id } = req.params;
 
-    const user = await userRepository.findById(id);
-    if (!user)
-      res.status(StatusCodes.NOT_FOUND).json({ msg: 'User not found' });
+      const user = await userRepository.findById(id);
+      if (!user)
+        res.status(StatusCodes.NOT_FOUND).json({ msg: 'User not found' });
 
-    return res.status(StatusCodes.OK).json({ user });
+      return res.status(StatusCodes.OK).json({ user });
+    } catch (error) {
+      return next(error);
+    }
   },
 );
 
@@ -68,8 +73,8 @@ userRoute.delete(
   '/users/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    await userRepository.remove(id)
-    return res.status(StatusCodes.OK).json({ msg: "user deleted" });
+    await userRepository.remove(id);
+    return res.status(StatusCodes.OK).json({ msg: 'user deleted' });
   },
 );
 
